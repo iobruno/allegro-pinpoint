@@ -11,6 +11,9 @@ ALLEGRO_DISPLAY *display;
 ALLEGRO_EVENT_QUEUE *event_queue;
 ALLEGRO_TIMER *timer;
 
+int mouseX = 0;
+int mouseY = 0;
+
 int startUp();
 void redrawScreen();
 void destroy();
@@ -20,33 +23,37 @@ int main(int argc, char** argv) {
     bool needsRedrawing = true;
 
     startUp();
-    redrawScreen();
-    al_start_timer(timer);
 
     while (isRunning) {
-        ALLEGRO_EVENT event;
+        ALLEGRO_EVENT events;
         ALLEGRO_TIMEOUT timeout;
         al_init_timeout(&timeout, 0.06);
+        al_wait_for_event_until(event_queue, &events, &timeout);
 
-        if (al_wait_for_event_until(event_queue, &event, &timeout)) {
-            switch (event.type) {
-                case ALLEGRO_EVENT_TIMER:
-                    needsRedrawing = true;
-                    break;
-                case ALLEGRO_EVENT_DISPLAY_CLOSE:
-                    isRunning = false;
-                    break;
-                default:
-                    fprintf(stderr, "Unsupported event received: %d\n", event.type);
-                    break;
+        switch(events.type) {
+            case ALLEGRO_EVENT_MOUSE_AXES: {
+                mouseX = events.mouse.x;
+                mouseY = events.mouse.y;
+                break;
+            }
+            case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN: {
+                fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
+                break;
+            }
+            case ALLEGRO_EVENT_TIMER: {
+                needsRedrawing = true;
+                break;
+            }
+            case ALLEGRO_EVENT_DISPLAY_CLOSE: {
+                isRunning = false;
             }
         }
+    }
 
-        // Check if we need to needsRedrawing
-        if (needsRedrawing && al_is_event_queue_empty(event_queue)) {
-            redrawScreen();
-            needsRedrawing = false;
-        }
+    // Check if we need to needsRedrawing
+    if (needsRedrawing && al_is_event_queue_empty(event_queue)) {
+        redrawScreen();
+        needsRedrawing = false;
     }
 
     destroy();
@@ -75,8 +82,14 @@ int startUp() {
         return 1;
     }
     else {
-        al_register_event_source(event_queue, al_get_display_event_source(display));
+        al_init_primitives_addon();
+        al_install_mouse();
         al_register_event_source(event_queue, al_get_timer_event_source(timer));
+        al_register_event_source(event_queue, al_get_display_event_source(display));
+        al_register_event_source(event_queue, al_get_mouse_event_source());
+        al_start_timer(timer);
+
+        redrawScreen();
     }
 
     return 0;
