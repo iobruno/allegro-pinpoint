@@ -5,6 +5,7 @@
 #define screenWidth 1920
 #define screenHeight 1080
 #define bgColor al_map_rgb(0, 0, 0)
+#define whiteBgColor al_map_rgb(255, 255, 255)
 #define refreshRate 1.0f/60
 
 ALLEGRO_DISPLAY *display;
@@ -36,8 +37,10 @@ int main(int argc, char** argv) {
                 mouseY = events.mouse.y;
                 break;
             }
-            case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN: {
+            case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
                 fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
+                al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 1);
+                redrawScreen();
                 break;
             }
             case ALLEGRO_EVENT_TIMER: {
@@ -99,8 +102,8 @@ int startUp() {
  * Draws/Redraws screen bgColor
  */
 void redrawScreen() {
-    al_clear_to_color(bgColor);
     al_flip_display();
+    al_clear_to_color(bgColor);
 }
 
 /**
