@@ -15,6 +15,7 @@ ALLEGRO_TIMER *timer;
 int mouseX = 0;
 int mouseY = 0;
 
+
 int startUp();
 void redrawScreen();
 void destroy();
@@ -71,7 +72,7 @@ int startUp() {
 
     if (!al_init()) {
         al_show_native_message_box(nullptr , "Pinpoint++", nullptr,
-                                   "Could not initialize Allegro", nullptr, NULL);
+                                   "Could not initialize Allegro", nullptr, 0);
         return 1;
     }
 
@@ -81,7 +82,7 @@ int startUp() {
 
     if (!timer or !display or !event_queue) {
         al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
-                                   "Error Initialing Timer, Display or Event Queue", nullptr, NULL);
+                                   "Error Initialing Timer, Display or Event Queue", nullptr, 0);
         return 1;
     }
     else {
