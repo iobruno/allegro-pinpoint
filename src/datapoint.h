@@ -1,7 +1,3 @@
-//
-// Created by Bruno Oliveira on 06/10/20.
-//
-
 #ifndef ALLEGRO_PINPOINT_DATAPOINT_H
 #define ALLEGRO_PINPOINT_DATAPOINT_H
 

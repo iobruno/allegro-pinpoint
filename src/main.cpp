@@ -27,6 +27,61 @@ int mouseY = 0;
 
 using namespace std;
 
+int main(int argc, char** argv) {
+    bool isRunning = true;
+    bool needsRedrawing = true;
+
+    Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/senac/allegro-pinpoint/assets/datasets/cities.csv");
+
+    City *city = datapoint.pickRandomCity();
+    fprintf(stdout, "Selected City: %s (%d, %d)\n", city->getName().c_str(), city->getPosX(), city->getPosY());
+
+    startUp();
+
+    while (isRunning) {
+        ALLEGRO_EVENT events;
+        ALLEGRO_TIMEOUT timeout;
+        al_init_timeout(&timeout, 0.06);
+        al_wait_for_event_until(event_queue, &events, &timeout);
+
+        switch(events.type) {
+            case ALLEGRO_EVENT_MOUSE_AXES: {
+                mouseX = events.mouse.x;
+                mouseY = events.mouse.y;
+                break;
+            }
+            case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
+                double dist = city->computeDistanceFrom(mouseX, mouseY);
+                fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
+                fprintf(stdout, "Distance to %s (%d, %d): %f\n",
+                        city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
+
+                redrawScreen();
+                break;
+            }
+            case ALLEGRO_EVENT_TIMER: {
+                needsRedrawing = true;
+                break;
+            }
+            case ALLEGRO_EVENT_DISPLAY_CLOSE: {
+                isRunning = false;
+            }
+        }
+    }
+
+    // Check if we need to needsRedrawing
+    if (al_is_event_queue_empty(event_queue)) {
+        redrawScreen();
+        fprintf(stdout, "Event Queue is empty - Redrawing");
+    } else if (needsRedrawing) {
+        redrawScreen();
+        needsRedrawing = false;
+    }
+
+    destroy();
+    return 0;
+}
+
 int startUp() {
 
     if (!al_init()) {
@@ -95,56 +150,3 @@ void destroy() {
 }
 
 
-int main(int argc, char** argv) {
-    bool isRunning = true;
-    bool needsRedrawing = true;
-
-    Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/senac/allegro-pinpoint/assets/datasets/cities.csv");
-    City *city = datapoint.pickRandomCity();
-    fprintf(stdout, "Selected City: %s (%d, %d)\n", city->getName().c_str(), city->getPosX(), city->getPosY());
-
-    startUp();
-
-    while (isRunning) {
-        ALLEGRO_EVENT events;
-        ALLEGRO_TIMEOUT timeout;
-        al_init_timeout(&timeout, 0.06);
-        al_wait_for_event_until(event_queue, &events, &timeout);
-
-        switch(events.type) {
-            case ALLEGRO_EVENT_MOUSE_AXES: {
-                mouseX = events.mouse.x;
-                mouseY = events.mouse.y;
-                break;
-            }
-            case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
-                float dist = city->computeDistanceFrom(mouseX, mouseY);
-                fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
-                fprintf(stdout, "Distance to %s (%d, %d): %f\n",
-                        city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
-
-                redrawScreen();
-                break;
-            }
-            case ALLEGRO_EVENT_TIMER: {
-                needsRedrawing = true;
-                break;
-            }
-            case ALLEGRO_EVENT_DISPLAY_CLOSE: {
-                isRunning = false;
-            }
-        }
-    }
-
-    // Check if we need to needsRedrawing
-    if (al_is_event_queue_empty(event_queue)) {
-        redrawScreen();
-        fprintf(stdout, "Event Queue is empty - Redrawing");
-    } else if (needsRedrawing) {
-        redrawScreen();
-        needsRedrawing = false;
-    }
-
-    destroy();
-    return 0;
-}
