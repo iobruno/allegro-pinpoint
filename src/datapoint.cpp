@@ -15,16 +15,12 @@ City *Datapoint::pickRandomCity() {
 }
 
 Datapoint Datapoint::loadDataPointsFrom(std::string filepath) {
-
     ifstream ip(filepath);
+    string cityName, countryName, posX, posY;
+    stack<City*> cities;
 
     if (!ip.is_open())
         fprintf(stdout, "Could not load file from %s", filepath.c_str());
-
-    string cityName, countryName;
-    string posX, posY;
-
-    stack<City*> cities;
 
     while (ip.good()) {
         getline(ip, cityName, ',');
@@ -35,5 +31,6 @@ Datapoint Datapoint::loadDataPointsFrom(std::string filepath) {
         cities.push(city);
     }
 
+    ip.close();
     return Datapoint(cities);
 }
