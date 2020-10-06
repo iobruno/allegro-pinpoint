@@ -5,6 +5,7 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
+#include "city.h"
 
 #define screenWidth 1920
 #define screenHeight 1080
@@ -49,7 +50,6 @@ int main(int argc, char** argv) {
             }
             case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
                 fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
-                fprintf(stdout, "Timer: %f\n", events.timer.timestamp);
                 redrawScreen();
                 break;
             }
