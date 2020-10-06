@@ -101,6 +101,7 @@ int main(int argc, char** argv) {
 
     Datapoint datapoint = Datapoint::loadDataPointsFrom("");
     City *city = datapoint.pickRandomCity();
+    fprintf(stdout, "Selected City: %s (%d, %d)\n", city->getName().c_str(), city->getPosX(), city->getPosY());
 
     startUp();
 
