@@ -1,4 +1,3 @@
-#include <iostream>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_primitives.h>
@@ -6,6 +5,7 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include "city.h"
+#include "datapoint.h"
 
 #define screenWidth 1920
 #define screenHeight 1080
@@ -30,9 +30,13 @@ void destroy();
 
 using namespace std;
 
+
 int main(int argc, char** argv) {
     bool isRunning = true;
     bool needsRedrawing = true;
+
+    Datapoint datapoint = Datapoint::loadDataPointsFrom("");
+    City *city = datapoint.pickRandomCity();
 
     startUp();
 
@@ -49,7 +53,11 @@ int main(int argc, char** argv) {
                 break;
             }
             case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
+                float dist = city->computeDistanceFrom(mouseX, mouseY);
                 fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
+                fprintf(stdout, "Distance to %s (%d, %d): %f\n",
+                        city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
+
                 redrawScreen();
                 break;
             }
