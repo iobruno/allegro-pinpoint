@@ -1,6 +1,8 @@
+#include <iostream>
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_image.h>
 
 #define screenWidth 1920
 #define screenHeight 1080
@@ -11,6 +13,7 @@
 ALLEGRO_DISPLAY *display;
 ALLEGRO_EVENT_QUEUE *event_queue;
 ALLEGRO_TIMER *timer;
+ALLEGRO_BITMAP *bgImage;
 
 int mouseX = 0;
 int mouseY = 0;
@@ -76,26 +79,33 @@ int startUp() {
         return 1;
     }
 
+    al_init_primitives_addon();
+    al_init_image_addon();
+    al_install_mouse();
+
     display = al_create_display(screenWidth, screenHeight);
     timer = al_create_timer(refreshRate);
     event_queue = al_create_event_queue();
+    bgImage = al_load_bitmap("/Users/iobruno/Vault/senac/allegro-pinpoint/assets/images/world_map.jpg");
 
     if (!timer or !display or !event_queue) {
         al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
                                    "Error Initialing Timer, Display or Event Queue", nullptr, 0);
         return 1;
     }
-    else {
-        al_init_primitives_addon();
-        al_install_mouse();
-        al_register_event_source(event_queue, al_get_timer_event_source(timer));
-        al_register_event_source(event_queue, al_get_display_event_source(display));
-        al_register_event_source(event_queue, al_get_mouse_event_source());
-        al_start_timer(timer);
 
-        redrawScreen();
+    if (!bgImage) {
+        al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
+                                   "Error Loading Background Image", nullptr, 0);
+        return 1;
     }
 
+    al_register_event_source(event_queue, al_get_timer_event_source(timer));
+    al_register_event_source(event_queue, al_get_display_event_source(display));
+    al_register_event_source(event_queue, al_get_mouse_event_source());
+    al_start_timer(timer);
+
+    redrawScreen();
     return 0;
 }
 
@@ -103,6 +113,9 @@ int startUp() {
  * Draws/Redraws screen bgColor
  */
 void redrawScreen() {
+    al_draw_scaled_bitmap(bgImage,
+                          0, 0, 1375, 972,
+                          0, 0, screenWidth, screenHeight, 0);
     al_flip_display();
     al_clear_to_color(bgColor);
 }
@@ -112,5 +125,7 @@ void redrawScreen() {
  */
 void destroy() {
     al_destroy_display(display);
+    al_destroy_timer(timer);
     al_destroy_event_queue(event_queue);
+    al_destroy_bitmap(bgImage);
 }
