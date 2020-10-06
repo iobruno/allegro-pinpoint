@@ -10,7 +10,7 @@
 #define screenHeight 1080
 #define bgColor al_map_rgb(0, 0, 0)
 #define whiteBgColor al_map_rgb(255, 255, 255)
-#define refreshRate 1.0f/60
+#define refreshRate 60
 
 ALLEGRO_DISPLAY *display;
 ALLEGRO_EVENT_QUEUE *event_queue;
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
             }
             case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
                 fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
-                al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 1);
+                fprintf(stdout, "Timer: %f\n", events.timer.timestamp);
                 redrawScreen();
                 break;
             }
@@ -64,7 +64,10 @@ int main(int argc, char** argv) {
     }
 
     // Check if we need to needsRedrawing
-    if (needsRedrawing && al_is_event_queue_empty(event_queue)) {
+    if (al_is_event_queue_empty(event_queue)) {
+        redrawScreen();
+        fprintf(stdout, "Event Queue is empty - Redrawing");
+    } else if (needsRedrawing) {
         redrawScreen();
         needsRedrawing = false;
     }
@@ -93,7 +96,7 @@ int startUp() {
     al_init_acodec_addon();
 
     display = al_create_display(screenWidth, screenHeight);
-    timer = al_create_timer(refreshRate);
+    timer = al_create_timer(1.0f/refreshRate);
     event_queue = al_create_event_queue();
 
     if (!timer or !display or !event_queue) {
@@ -132,6 +135,8 @@ void redrawScreen() {
     al_draw_scaled_bitmap(bgImage,
                           0, 0, 1375, 972,
                           0, 0, screenWidth, screenHeight, 0);
+    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
+
     al_flip_display();
     al_clear_to_color(bgColor);
 }
