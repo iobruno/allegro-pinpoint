@@ -11,6 +11,7 @@ public:
     std::string getName();
     int getPosX() const;
     int getPosY() const;
+    float computeDistanceFrom(int posX, int posY);
 
 private:
     std::string name;

@@ -1,4 +1,5 @@
 #include "city.h"
+#include <math.h>
 
 using namespace std;
 
@@ -22,4 +23,9 @@ int City::getPosY() const {
 
 string City::getName() {
     return this->name;
+}
+
+float City::computeDistanceFrom(int posX, int posY) {
+    float dist = pow((posX - this->getPosX()), 2) + pow((posY - this->getPosY()), 2);
+    return sqrt(dist);
 }
