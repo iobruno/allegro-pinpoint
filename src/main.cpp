@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
     bool isRunning = true;
     bool needsRedrawing = true;
 
-    Datapoint datapoint = Datapoint::loadDataPointsFrom("");
+    Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/senac/allegro-pinpoint/assets/datasets/cities.csv");
     City *city = datapoint.pickRandomCity();
     fprintf(stdout, "Selected City: %s (%d, %d)\n", city->getName().c_str(), city->getPosX(), city->getPosY());
 
