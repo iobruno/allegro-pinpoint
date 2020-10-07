@@ -11,7 +11,9 @@ Datapoint::Datapoint(std::stack<City *> cities) {
 }
 
 City *Datapoint::pickRandomCity() {
-    return this->cities.top();
+    City *city = this->cities.top();
+    this->cities.pop();
+    return city;
 }
 
 Datapoint Datapoint::loadDataPointsFrom(std::string filepath) {
