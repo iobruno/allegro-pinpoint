@@ -53,10 +53,15 @@ int main(int argc, char** argv) {
             case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
                 double dist = city->computeDistanceFrom(mouseX, mouseY);
                 fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
-                fprintf(stdout, "Distance to %s (%d, %d): %f\n",
+                fprintf(stdout, "Distance to %s (%d, %d): %f\n\n",
                         city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
 
                 redrawScreen();
+
+                city = datapoint.pickRandomCity();
+                fprintf(stdout, "Selected City: %s (%d, %d)\n",
+                        city->getName().c_str(), city->getPosX(), city->getPosY());
+
                 break;
             }
             case ALLEGRO_EVENT_TIMER: {
@@ -134,8 +139,8 @@ void redrawScreen() {
     al_draw_scaled_bitmap(bgImage,
                           0, 0, 1375, 972,
                           0, 0, screenWidth, screenHeight, 0);
-    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
 
+    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
     al_flip_display();
     al_clear_to_color(bgColor);
 }
@@ -148,5 +153,3 @@ void destroy() {
     al_destroy_sample(bgMusic);
     al_destroy_sample_instance(bgMusicInstance);
 }
-
-
