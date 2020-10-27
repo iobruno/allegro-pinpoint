@@ -135,7 +135,7 @@ int startUp() {
     al_reserve_samples(2);
     al_set_sample_instance_playmode(bgMusicInstance, ALLEGRO_PLAYMODE_LOOP);
     al_attach_sample_instance_to_mixer(bgMusicInstance, al_get_default_mixer());
-    if (!font) {
+    if (!bgMusic || !bgMusicInstance) {
         al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
                                    "Error Loading Audio Sample", nullptr, 0);
         exit(1);
@@ -161,16 +161,32 @@ int startUp() {
     return 0;
 }
 
+void drawScore(int rAttempts, int secsLeft, int score) {
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 430, screenHeight-42,
+                 0, ("Life: " + to_string(rAttempts)).c_str());
+
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 850, screenHeight-42,
+                 0, ("Timer: " + to_string(secsLeft)).c_str());
+
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 1270, screenHeight-42,
+                 0, ("Score: " + to_string(score)).c_str());
+}
+
 void redrawScreen() {
     al_draw_scaled_bitmap(bgImage,
                           0, 0, 1375, 972,
                           0, 0, screenWidth, screenHeight-50, 0);
-
-    al_draw_text(font, al_map_rgb(255, 255, 255), screenWidth/2, screenHeight-42, ALLEGRO_ALIGN_CENTER, "SCORE: ");
+    drawScore(3, 99, 50);
     al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
     al_flip_display();
     al_clear_to_color(bgColor);
 }
+
+
+
 
 void destroy() {
     al_destroy_display(display);
