@@ -28,6 +28,14 @@ ALLEGRO_FONT *font;
 int mouseX = 0;
 int mouseY = 0;
 
+int score = 0;
+int lifeAttempts = 5;
+double secondsLeft = 0.0;
+
+double startTime;
+int timePerAttempt = 5; // in Seconds
+
+
 using namespace std;
 
 int main(int argc, char** argv) {
@@ -35,11 +43,11 @@ int main(int argc, char** argv) {
     bool needsRedrawing = true;
 
     Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/github/allegro-pinpoint/assets/datasets/cities.csv");
+    startUp();
 
     City *city = datapoint.pickRandomCity();
+    startTime = al_get_time();
     fprintf(stdout, "Selected City: %s (%d, %d)\n", city->getName().c_str(), city->getPosX(), city->getPosY());
-
-    startUp();
 
     while (isRunning) {
         ALLEGRO_EVENT events;
@@ -59,16 +67,21 @@ int main(int argc, char** argv) {
                 fprintf(stdout, "Distance to %s (%d, %d): %f\n\n",
                         city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
 
-                redrawScreen();
-
                 city = datapoint.pickRandomCity();
                 fprintf(stdout, "Selected City: %s (%d, %d)\n",
                         city->getName().c_str(), city->getPosX(), city->getPosY());
-
                 break;
             }
             case ALLEGRO_EVENT_TIMER: {
-                needsRedrawing = true;
+                secondsLeft = computeSecsLeft();
+
+                if (secondsLeft < 0.0) {
+                    lifeAttempts -= 1;
+                    city = datapoint.pickRandomCity();
+                    startTime = al_get_time();
+                }
+
+                redrawScreen();
                 break;
             }
             case ALLEGRO_EVENT_DISPLAY_CLOSE: {
@@ -81,9 +94,6 @@ int main(int argc, char** argv) {
     if (al_is_event_queue_empty(event_queue)) {
         redrawScreen();
         fprintf(stdout, "Event Queue is empty - Redrawing");
-    } else if (needsRedrawing) {
-        redrawScreen();
-        needsRedrawing = false;
     }
 
     destroy();
@@ -161,32 +171,34 @@ int startUp() {
     return 0;
 }
 
-void drawScore(int rAttempts, int secsLeft, int score) {
+void redrawScreen() {
+    al_draw_scaled_bitmap(bgImage,
+                          0, 0, 1375, 972,
+                          0, 0, screenWidth, screenHeight-50, 0);
+
+    drawHUD();
+    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
+    al_flip_display();
+    al_clear_to_color(bgColor);
+}
+
+void drawHUD() {
     al_draw_text(font, al_map_rgb(255, 255, 255),
                  430, screenHeight-42,
-                 0, ("Life: " + to_string(rAttempts)).c_str());
+                 0, ("Life: " + to_string(lifeAttempts)).c_str());
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
                  850, screenHeight-42,
-                 0, ("Timer: " + to_string(secsLeft)).c_str());
+                 0, ("Timer: " + to_string(int(secondsLeft))).c_str());
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
                  1270, screenHeight-42,
                  0, ("Score: " + to_string(score)).c_str());
 }
 
-void redrawScreen() {
-    al_draw_scaled_bitmap(bgImage,
-                          0, 0, 1375, 972,
-                          0, 0, screenWidth, screenHeight-50, 0);
-    drawScore(3, 99, 50);
-    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
-    al_flip_display();
-    al_clear_to_color(bgColor);
+double computeSecsLeft() {
+    return timePerAttempt - (al_get_time() - startTime);
 }
-
-
-
 
 void destroy() {
     al_destroy_display(display);
@@ -195,4 +207,5 @@ void destroy() {
     al_destroy_bitmap(bgImage);
     al_destroy_sample(bgMusic);
     al_destroy_sample_instance(bgMusicInstance);
+    al_destroy_font(font);
 }
