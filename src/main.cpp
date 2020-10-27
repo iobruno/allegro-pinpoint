@@ -4,6 +4,8 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include "main.h"
 #include "city.h"
 #include "datapoint.h"
@@ -21,6 +23,7 @@ ALLEGRO_TIMER *timer;
 ALLEGRO_BITMAP *bgImage;
 ALLEGRO_SAMPLE *bgMusic;
 ALLEGRO_SAMPLE_INSTANCE *bgMusicInstance;
+ALLEGRO_FONT *font;
 
 int mouseX = 0;
 int mouseY = 0;
@@ -31,7 +34,7 @@ int main(int argc, char** argv) {
     bool isRunning = true;
     bool needsRedrawing = true;
 
-    Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/senac/allegro-pinpoint/assets/datasets/cities.csv");
+    Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/github/allegro-pinpoint/assets/datasets/cities.csv");
 
     City *city = datapoint.pickRandomCity();
     fprintf(stdout, "Selected City: %s (%d, %d)\n", city->getName().c_str(), city->getPosX(), city->getPosY());
@@ -101,6 +104,8 @@ int startUp() {
     al_init_primitives_addon();
     al_init_image_addon();
     al_init_acodec_addon();
+    al_init_font_addon();
+    al_init_ttf_addon();
 
     display = al_create_display(screenWidth, screenHeight);
     timer = al_create_timer(1.0f/refreshRate);
@@ -112,18 +117,39 @@ int startUp() {
         return 1;
     }
 
-    bgImage = al_load_bitmap("/Users/iobruno/Vault/senac/allegro-pinpoint/assets/images/world_map.jpg");
+    /**
+     * Loads Background Image
+     */
+    bgImage = al_load_bitmap("/Users/iobruno/Vault/github/allegro-pinpoint/assets/images/world_map.jpg");
     if (!bgImage) {
         al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
                                    "Error Loading Background Image", nullptr, 0);
-        return 1;
+        exit(1);
     }
 
-    bgMusic = al_load_sample("/Users/iobruno/Vault/senac/allegro-pinpoint/assets/audio/tracks/POL-misty-dungeon-short.ogg");
+    /**
+     * Loads Background Music
+     */
+    bgMusic = al_load_sample("/Users/iobruno/Vault/github/allegro-pinpoint/assets/audio/tracks/POL-misty-dungeon-short.ogg");
     bgMusicInstance = al_create_sample_instance(bgMusic);
     al_reserve_samples(2);
     al_set_sample_instance_playmode(bgMusicInstance, ALLEGRO_PLAYMODE_LOOP);
     al_attach_sample_instance_to_mixer(bgMusicInstance, al_get_default_mixer());
+    if (!font) {
+        al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
+                                   "Error Loading Audio Sample", nullptr, 0);
+        exit(1);
+    }
+
+    /**
+     * Loads TrueTypeFont
+     */
+    font = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf", 32, 0);
+    if (!font) {
+        al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
+                                   "Error Loading TTF Font", nullptr, 0);
+        exit(1);
+    }
 
     al_register_event_source(event_queue, al_get_timer_event_source(timer));
     al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -138,8 +164,9 @@ int startUp() {
 void redrawScreen() {
     al_draw_scaled_bitmap(bgImage,
                           0, 0, 1375, 972,
-                          0, 0, screenWidth, screenHeight, 0);
+                          0, 0, screenWidth, screenHeight-50, 0);
 
+    al_draw_text(font, al_map_rgb(255, 255, 255), screenWidth/2, screenHeight-42, ALLEGRO_ALIGN_CENTER, "SCORE: ");
     al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
     al_flip_display();
     al_clear_to_color(bgColor);
