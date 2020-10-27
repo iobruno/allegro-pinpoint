@@ -30,7 +30,7 @@ int mouseY = 0;
 
 int score = 0;
 int lifeAttempts = 1;
-int timePerAttempt = 3; // in Seconds
+int timePerAttempt = 5; // in Seconds
 double secondsLeft, startTime;
 
 bool gameOverCondition = false;
@@ -39,14 +39,12 @@ using namespace std;
 
 int main(int argc, char** argv) {
     bool isRunning = true;
-    bool needsRedrawing = true;
 
     Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/github/allegro-pinpoint/assets/datasets/cities.csv");
     startUp();
 
     City *city = datapoint.pickRandomCity();
     startTime = al_get_time();
-    fprintf(stdout, "Selected City: %s (%d, %d)\n", city->getName().c_str(), city->getPosX(), city->getPosY());
 
     while (isRunning) {
         ALLEGRO_EVENT events;
@@ -64,39 +62,48 @@ int main(int argc, char** argv) {
                 if (gameOverCondition) {
                     isRunning = false;
                 }
-
-                double dist = city->computeDistanceFrom(mouseX, mouseY);
-                fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
-                fprintf(stdout, "Distance to %s (%d, %d): %f\n\n",
-                        city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
-
-                city = datapoint.pickRandomCity();
-                fprintf(stdout, "Selected City: %s (%d, %d)\n",
-                        city->getName().c_str(), city->getPosX(), city->getPosY());
+                if (city != nullptr) {
+                    double dist = city->computeDistanceFrom(mouseX, mouseY);
+                    fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
+                    fprintf(stdout, "Distance to %s (%d, %d): %f\n\n",
+                            city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
+                    city = nullptr;
+                }
                 break;
             }
             case ALLEGRO_EVENT_TIMER: {
                 secondsLeft = computeSecsLeft();
+
+                /** All attempts are gone, gameOver try again */
+                if (lifeAttempts <= 0) {
+                    gameOver();
+                    break;
+                }
+
+                /**
+                 * You still got some life left on you, so... if there's more datapoints available,
+                 * continue, otherwise you bet the game
+                 */
+                if (city == nullptr) {
+                    if (datapoint.isEmpty()) {
+                        gameWon(); // Game Won
+                    } else {
+                        city = datapoint.pickRandomCity(); // Continue the Game
+                        displaySelectedCity(city);
+                        startTime = al_get_time();
+                    }
+                    break;
+                }
+
+                /** Default clause, the game is running and the clock is ticking */
                 if (secondsLeft <= 0.0) {
                     lifeAttempts -= 1;
                     city = datapoint.pickRandomCity();
+                    displaySelectedCity(city);
                     startTime = al_get_time();
                 }
 
-                // Loss Condition
-                if (lifeAttempts <= 0) {
-                    lifeAttempts = 0;
-                    secondsLeft = 0.0;
-                    gameOver();
-                }
-
-                // Win Condition
-                // else if () { }
-
-                else {
-                    redrawScreen();
-                }
-
+                redrawScreen();
                 break;
             }
             case ALLEGRO_EVENT_DISPLAY_CLOSE: {
@@ -115,12 +122,12 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-int startUp() {
+void startUp() {
 
     if (!al_init()) {
         al_show_native_message_box(nullptr , "Pinpoint++", nullptr,
                                    "Could not initialize Allegro", nullptr, 0);
-        return 1;
+        exit(1);
     }
 
     al_install_mouse();
@@ -139,7 +146,7 @@ int startUp() {
     if (!timer or !display or !event_queue) {
         al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
                                    "Error Initialing Timer, Display or Event Queue", nullptr, 0);
-        return 1;
+        exit(1);
     }
 
     /**
@@ -183,7 +190,6 @@ int startUp() {
 
     al_start_timer(timer);
     redrawScreen();
-    return 0;
 }
 
 void redrawScreen() {
@@ -211,8 +217,30 @@ void drawHUD() {
                  0, ("Score: " + to_string(score)).c_str());
 }
 
+void gameWon() {
+    gameOverCondition = true;
+
+    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf", 64, 0);
+    int xCenteredLabel = (screenWidth / 2) - 500;
+    int yCenteredLabel = (screenHeight / 2) - 100;
+
+    al_draw_text(gameOverFont, al_map_rgb(255, 255, 255),
+                 xCenteredLabel, yCenteredLabel,0, ("CONGRATULATIONS"));
+
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 xCenteredLabel, yCenteredLabel+150,
+                 0, ("Press any key to quit the game"));
+
+    drawHUD();
+    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
+    al_flip_display();
+    al_clear_to_color(bgColor);
+}
+
 void gameOver() {
     gameOverCondition = true;
+    lifeAttempts = 0;
+    secondsLeft = 0.0;
 
     auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf", 64, 0);
     int xCenteredLabel = (screenWidth / 2) - 250;
@@ -229,6 +257,15 @@ void gameOver() {
     al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
     al_flip_display();
     al_clear_to_color(bgColor);
+}
+
+void displaySelectedCity(City* city) {
+    if (city != nullptr) {
+        fprintf(stdout, "Selected City: %s (%d, %d)\n",
+                city->getName().c_str(), city->getPosX(), city->getPosY());
+    } else {
+        fprintf(stdout, "No available city. Preparing to exit...\n");
+    }
 }
 
 double computeSecsLeft() {

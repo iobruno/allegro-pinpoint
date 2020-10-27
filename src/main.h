@@ -1,11 +1,15 @@
 #ifndef ALLEGRO_PINPOINT_MAIN_H
 #define ALLEGRO_PINPOINT_MAIN_H
 
-int startUp();
+#include "city.h"
+
+void startUp();
 void redrawScreen();
 void destroy();
 void drawHUD();
 double computeSecsLeft();
 void gameOver();
+void gameWon();
+void displaySelectedCity(City* city);
 
 #endif //ALLEGRO_PINPOINT_MAIN_H
