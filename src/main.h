@@ -6,5 +6,6 @@ void redrawScreen();
 void destroy();
 void drawHUD();
 double computeSecsLeft();
+void gameOver();
 
 #endif //ALLEGRO_PINPOINT_MAIN_H

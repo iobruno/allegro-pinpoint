@@ -29,12 +29,11 @@ int mouseX = 0;
 int mouseY = 0;
 
 int score = 0;
-int lifeAttempts = 5;
-double secondsLeft = 0.0;
+int lifeAttempts = 1;
+int timePerAttempt = 3; // in Seconds
+double secondsLeft, startTime;
 
-double startTime;
-int timePerAttempt = 5; // in Seconds
-
+bool gameOverCondition = false;
 
 using namespace std;
 
@@ -62,6 +61,10 @@ int main(int argc, char** argv) {
                 break;
             }
             case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
+                if (gameOverCondition) {
+                    isRunning = false;
+                }
+
                 double dist = city->computeDistanceFrom(mouseX, mouseY);
                 fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
                 fprintf(stdout, "Distance to %s (%d, %d): %f\n\n",
@@ -74,14 +77,26 @@ int main(int argc, char** argv) {
             }
             case ALLEGRO_EVENT_TIMER: {
                 secondsLeft = computeSecsLeft();
-
-                if (secondsLeft < 0.0) {
+                if (secondsLeft <= 0.0) {
                     lifeAttempts -= 1;
                     city = datapoint.pickRandomCity();
                     startTime = al_get_time();
                 }
 
-                redrawScreen();
+                // Loss Condition
+                if (lifeAttempts <= 0) {
+                    lifeAttempts = 0;
+                    secondsLeft = 0.0;
+                    gameOver();
+                }
+
+                // Win Condition
+                // else if () { }
+
+                else {
+                    redrawScreen();
+                }
+
                 break;
             }
             case ALLEGRO_EVENT_DISPLAY_CLOSE: {
@@ -194,6 +209,26 @@ void drawHUD() {
     al_draw_text(font, al_map_rgb(255, 255, 255),
                  1270, screenHeight-42,
                  0, ("Score: " + to_string(score)).c_str());
+}
+
+void gameOver() {
+    gameOverCondition = true;
+
+    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf", 64, 0);
+    int xCenteredLabel = (screenWidth / 2) - 250;
+    int yCenteredLabel = (screenHeight / 2) - 100;
+
+    al_draw_text(gameOverFont, al_map_rgb(255, 255, 255),
+                 xCenteredLabel, yCenteredLabel,0, ("GAME OVER"));
+
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 xCenteredLabel-200, yCenteredLabel+150,
+                 0, ("Press any key to quit the game"));
+
+    drawHUD();
+    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
+    al_flip_display();
+    al_clear_to_color(bgColor);
 }
 
 double computeSecsLeft() {
