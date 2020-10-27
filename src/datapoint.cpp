@@ -32,9 +32,12 @@ Datapoint::Datapoint(std::stack<City *> cities) {
 }
 
 City *Datapoint::pickRandomCity() {
-    City *city = this->cities.top();
-    this->cities.pop();
-    return city;
+    if (this->isNotEmpty()) {
+        City *city = this->cities.top();
+        this->cities.pop();
+        return city;
+    }
+    return nullptr;
 }
 
 bool Datapoint::isEmpty() {
