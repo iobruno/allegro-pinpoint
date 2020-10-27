@@ -62,8 +62,9 @@ int main(int argc, char** argv) {
                 if (gameOverCondition) {
                     isRunning = false;
                 }
-                if (city != nullptr) {
+                else if (city != nullptr) {
                     double dist = city->computeDistanceFrom(mouseX, mouseY);
+                    score += computeScore(dist);
                     fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
                     fprintf(stdout, "Distance to %s (%d, %d): %f\n\n",
                             city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
@@ -112,7 +113,6 @@ int main(int argc, char** argv) {
         }
     }
 
-    // Check if we need to needsRedrawing
     if (al_is_event_queue_empty(event_queue)) {
         redrawScreen();
         fprintf(stdout, "Event Queue is empty - Redrawing");
@@ -272,6 +272,34 @@ void displaySelectedCity(City* city) {
 
 double computeSecsLeft() {
     return timePerAttempt - (al_get_time() - startTime);
+}
+
+
+double computeAccuracyScore(double distanceFromTarget) {
+    double accuracyScore = 1000;
+    if (distanceFromTarget <= 100) {
+        accuracyScore -= 0;
+    } else if (distanceFromTarget <= 300) {
+        accuracyScore *= 0.75;
+    } else if (distanceFromTarget <= 500) {
+        accuracyScore *= 0.50;
+    } else if (distanceFromTarget <= 700) {
+        accuracyScore *= 0.25;
+    } else {
+        accuracyScore *= 0;
+    }
+    return accuracyScore;
+}
+
+double computeTimeBonus() {
+    double timeBonusFactor = 0.1;
+    return timeBonusFactor * int(secondsLeft);
+}
+
+int computeScore(double distanceFromTarget) {
+    double accScore = computeAccuracyScore(distanceFromTarget);
+    double multiplier = computeTimeBonus();
+    return int(accScore * (1 + multiplier));
 }
 
 void destroy() {

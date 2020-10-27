@@ -8,6 +8,7 @@ void redrawScreen();
 void destroy();
 void drawHUD();
 double computeSecsLeft();
+int computeScore(double distanceFromTarget);
 void gameOver();
 void gameWon();
 void displaySelectedCity(City* city);
