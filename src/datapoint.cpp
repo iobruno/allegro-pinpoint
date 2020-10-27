@@ -6,16 +6,6 @@
 
 using namespace std;
 
-Datapoint::Datapoint(std::stack<City *> cities) {
-    this->cities = std::move(cities);
-}
-
-City *Datapoint::pickRandomCity() {
-    City *city = this->cities.top();
-    this->cities.pop();
-    return city;
-}
-
 Datapoint Datapoint::loadDataPointsFrom(std::string filepath) {
     ifstream ip(filepath);
     string cityName, countryName, posX, posY;
@@ -35,4 +25,22 @@ Datapoint Datapoint::loadDataPointsFrom(std::string filepath) {
 
     ip.close();
     return Datapoint(cities);
+}
+
+Datapoint::Datapoint(std::stack<City *> cities) {
+    this->cities = std::move(cities);
+}
+
+City *Datapoint::pickRandomCity() {
+    City *city = this->cities.top();
+    this->cities.pop();
+    return city;
+}
+
+bool Datapoint::isEmpty() {
+    return this->cities.empty();
+}
+
+bool Datapoint::isNotEmpty() {
+    return !isEmpty();
 }

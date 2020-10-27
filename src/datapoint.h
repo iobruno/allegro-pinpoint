@@ -8,9 +8,11 @@
 class Datapoint {
 
 public:
-    explicit Datapoint(std::stack<City*> cities);
     static Datapoint loadDataPointsFrom(std::string filepath);
-    City *pickRandomCity();
+    explicit Datapoint(std::stack<City*> cities);
+    City* pickRandomCity();
+    bool isEmpty();
+    bool isNotEmpty();
 
 private:
     std::stack<City*> cities;
