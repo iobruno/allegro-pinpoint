@@ -12,7 +12,7 @@
 
 #define screenWidth 1920
 #define screenHeight 1080
-#define bgColor al_map_rgb(0, 0, 0)
+#define blackBgColor al_map_rgb(0, 0, 0)
 #define whiteBgColor al_map_rgb(255, 255, 255)
 #define refreshRate 60
 
@@ -25,26 +25,23 @@ ALLEGRO_SAMPLE *bgMusic;
 ALLEGRO_SAMPLE_INSTANCE *bgMusicInstance;
 ALLEGRO_FONT *font;
 
-int mouseX = 0;
-int mouseY = 0;
-
+int mouseX = 0, mouseY = 0;
 int score = 0;
-int lifeAttempts = 1;
-int timePerAttempt = 5; // in Seconds
+int lifeAttempts = 5;
+int timePerAttempt = 10; // in Seconds
 double secondsLeft, startTime;
 
-bool gameOverCondition = false;
+bool isGameOver = false;
 
 using namespace std;
 
 int main(int argc, char** argv) {
-    bool isRunning = true;
 
     Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/github/allegro-pinpoint/assets/datasets/cities.csv");
-    startUp();
+    City *city = nullptr;
+    bool isRunning = true;
 
-    City *city = datapoint.pickRandomCity();
-    startTime = al_get_time();
+    initializeModules();
 
     while (isRunning) {
         ALLEGRO_EVENT events;
@@ -59,7 +56,7 @@ int main(int argc, char** argv) {
                 break;
             }
             case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
-                if (gameOverCondition) {
+                if (isGameOver) {
                     isRunning = false;
                 }
                 else if (city != nullptr) {
@@ -75,7 +72,7 @@ int main(int argc, char** argv) {
             case ALLEGRO_EVENT_TIMER: {
                 secondsLeft = computeSecsLeft();
 
-                /** All attempts are gone, gameOver try again */
+                /** All attempts are gone, Game Over  */
                 if (lifeAttempts <= 0) {
                     gameOver();
                     break;
@@ -122,8 +119,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-void startUp() {
-
+void initializeModules() {
     if (!al_init()) {
         al_show_native_message_box(nullptr , "Pinpoint++", nullptr,
                                    "Could not initialize Allegro", nullptr, 0);
@@ -149,9 +145,7 @@ void startUp() {
         exit(1);
     }
 
-    /**
-     * Loads Background Image
-     */
+    /** Loads Background Image */
     bgImage = al_load_bitmap("/Users/iobruno/Vault/github/allegro-pinpoint/assets/images/world_map.jpg");
     if (!bgImage) {
         al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
@@ -159,9 +153,7 @@ void startUp() {
         exit(1);
     }
 
-    /**
-     * Loads Background Music
-     */
+    /** Loads Background Music */
     bgMusic = al_load_sample("/Users/iobruno/Vault/github/allegro-pinpoint/assets/audio/tracks/POL-misty-dungeon-short.ogg");
     bgMusicInstance = al_create_sample_instance(bgMusic);
     al_reserve_samples(2);
@@ -173,9 +165,7 @@ void startUp() {
         exit(1);
     }
 
-    /**
-     * Loads TrueTypeFont
-     */
+    /** Loads TrueTypeFont */
     font = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf", 32, 0);
     if (!font) {
         al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
@@ -187,21 +177,20 @@ void startUp() {
     al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_mouse_event_source());
     al_play_sample_instance(bgMusicInstance);
-
     al_start_timer(timer);
     redrawScreen();
 }
 
 void redrawScreen() {
-    if (!gameOverCondition) {
+    if (!isGameOver) {
         al_draw_scaled_bitmap(bgImage,
                               0, 0, 1375, 972,
-                              0, 0, screenWidth, screenHeight - 50, 0);
+                              0, 0, screenWidth, screenHeight-50, 0);
 
         drawHUD();
         al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
         al_flip_display();
-        al_clear_to_color(bgColor);
+        al_clear_to_color(blackBgColor);
     }
 }
 
@@ -220,7 +209,7 @@ void drawHUD() {
 }
 
 void gameWon() {
-    gameOverCondition = true;
+    isGameOver = true;
 
     auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf", 64, 0);
     int xCenteredLabel = (screenWidth / 2) - 500;
@@ -236,11 +225,11 @@ void gameWon() {
     drawHUD();
     al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
     al_flip_display();
-    al_clear_to_color(bgColor);
+    al_clear_to_color(blackBgColor);
 }
 
 void gameOver() {
-    gameOverCondition = true;
+    isGameOver = true;
     lifeAttempts = 0;
     secondsLeft = 0.0;
 
@@ -258,7 +247,7 @@ void gameOver() {
     drawHUD();
     al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
     al_flip_display();
-    al_clear_to_color(bgColor);
+    al_clear_to_color(blackBgColor);
 }
 
 void displaySelectedCity(City* city) {
@@ -274,32 +263,32 @@ double computeSecsLeft() {
     return timePerAttempt - (al_get_time() - startTime);
 }
 
-
 double computeAccuracyScore(double distanceFromTarget) {
     double accuracyScore = 1000;
-    if (distanceFromTarget <= 100) {
+    if (distanceFromTarget <= 50) {
         accuracyScore -= 0;
-    } else if (distanceFromTarget <= 300) {
+    } else if (distanceFromTarget <= 100) {
         accuracyScore *= 0.75;
-    } else if (distanceFromTarget <= 500) {
+    } else if (distanceFromTarget <= 150) {
         accuracyScore *= 0.50;
-    } else if (distanceFromTarget <= 700) {
+    } else if (distanceFromTarget <= 200) {
         accuracyScore *= 0.25;
     } else {
         accuracyScore *= 0;
+        lifeAttempts -= 1; // Player wasn't even trying
     }
     return accuracyScore;
 }
 
 double computeTimeBonus() {
-    double timeBonusFactor = 0.1;
+    double timeBonusFactor = 0.05;
     return timeBonusFactor * int(secondsLeft);
 }
 
 int computeScore(double distanceFromTarget) {
     double accScore = computeAccuracyScore(distanceFromTarget);
     double multiplier = computeTimeBonus();
-    return int(accScore * (1 + multiplier));
+    return int((accScore * (1 + multiplier))/10);
 }
 
 void destroy() {
