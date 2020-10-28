@@ -11,6 +11,12 @@ Allegro Pinpoint (academic project) in C/C++
 - T.B.D.
 
 ## TODO List
-- [ ] Mute button to stop the music
-- [ ] Heuristics on how to compute the score based on where the player clicked
-- [ ] Some sort of animation to enlarge the circle from the point clicked to the actual point where the city is
+- [X] Core Gameplay 
+- [ ] Graphically display where the city
+- [ ] Progress bar animation sprite (https://www.allegro.cc/manual/5/al_draw_scaled_bitmap)
+- [ ] Pinpoint sprite
+- [ ] Skip Logic
+- [ ] Game Progression (increase game difficulty as you progress)
+- [ ] Sound Effects when you click
+- [ ] Mute button to stop the BGM
+- [X] Heuristics on how to compute the score based on where the player clicked

@@ -3,7 +3,7 @@
 
 #include "city.h"
 
-void startUp();
+void initializeModules();
 void redrawScreen();
 void destroy();
 void drawHUD();
