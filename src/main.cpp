@@ -28,11 +28,11 @@ ALLEGRO_FONT *font;
 int mouseX = 0, mouseY = 0;
 
 int score = 0;
-int lifeAttempts = 5;
-int timePerAttempt = 10; // in Seconds
+int lifeAttempts = 3;
+int timePerAttempt = 5; // in Seconds
 City *city = nullptr;
 
-double secondsLeft, startTime;
+double timeLeft, startTime;
 bool isGameOver = false;
 
 using namespace std;
@@ -71,7 +71,8 @@ int main(int argc, char** argv) {
                 break;
             }
             case ALLEGRO_EVENT_TIMER: {
-                secondsLeft = computeSecsLeft();
+                if (!isGameOver)
+                    timeLeft = computeSecsLeft();
 
                 /** All attempts are gone, Game Over  */
                 if (lifeAttempts <= 0) {
@@ -95,7 +96,7 @@ int main(int argc, char** argv) {
                 }
 
                 /** Default clause, the game is running and the clock is ticking */
-                if (secondsLeft <= 0.0) {
+                if (timeLeft <= 0.0) {
                     lifeAttempts -= 1;
                     city = datapoint.pickRandomCity();
                     displaySelectedCity(city);
@@ -202,7 +203,7 @@ void drawHUD() {
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
                  530, screenHeight-42,
-                 0, ("Timer: " + to_string(int(secondsLeft))).c_str());
+                 0, ("Timer: " + to_string(int(timeLeft))).c_str());
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
                  880, screenHeight-42,
@@ -236,8 +237,7 @@ void gameWon() {
 
 void gameOver() {
     isGameOver = true;
-    lifeAttempts = 0;
-    secondsLeft = 0.0;
+    timeLeft = 0;
 
     auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf", 64, 0);
     int xCenteredLabel = (screenWidth / 2) - 250;
@@ -288,7 +288,7 @@ double computeAccuracyScore(double distanceFromTarget) {
 
 double computeTimeBonus() {
     double timeBonusFactor = 0.05;
-    return timeBonusFactor * int(secondsLeft);
+    return timeBonusFactor * int(timeLeft);
 }
 
 int computeScore(double distanceFromTarget) {
