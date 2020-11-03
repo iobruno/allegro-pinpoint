@@ -26,11 +26,13 @@ ALLEGRO_SAMPLE_INSTANCE *bgMusicInstance;
 ALLEGRO_FONT *font;
 
 int mouseX = 0, mouseY = 0;
+
 int score = 0;
 int lifeAttempts = 5;
 int timePerAttempt = 10; // in Seconds
-double secondsLeft, startTime;
+City *city = nullptr;
 
+double secondsLeft, startTime;
 bool isGameOver = false;
 
 using namespace std;
@@ -38,7 +40,6 @@ using namespace std;
 int main(int argc, char** argv) {
 
     Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/github/allegro-pinpoint/assets/datasets/cities.csv");
-    City *city = nullptr;
     bool isRunning = true;
 
     initializeModules();
@@ -196,16 +197,21 @@ void redrawScreen() {
 
 void drawHUD() {
     al_draw_text(font, al_map_rgb(255, 255, 255),
-                 430, screenHeight-42,
+                 180, screenHeight-42,
                  0, ("Life: " + to_string(lifeAttempts)).c_str());
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
-                 850, screenHeight-42,
+                 530, screenHeight-42,
                  0, ("Timer: " + to_string(int(secondsLeft))).c_str());
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
-                 1270, screenHeight-42,
+                 880, screenHeight-42,
                  0, ("Score: " + to_string(score)).c_str());
+
+    string cityName = (city != nullptr) ?  city->getName() : "N/A";
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 1240, screenHeight-42,
+                 0, ("City: " + cityName).c_str());
 }
 
 void gameWon() {
