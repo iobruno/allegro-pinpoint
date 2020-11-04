@@ -89,7 +89,6 @@ int main(int argc, char** argv) {
                         gameWon(); // Game Won
                     } else {
                         city = datapoint.pickRandomCity(); // Continue the Game
-                        displaySelectedCity(city);
                         startTime = al_get_time();
                     }
                     break;
@@ -99,7 +98,6 @@ int main(int argc, char** argv) {
                 if (timeLeft <= 0.0) {
                     lifeAttempts -= 1;
                     city = datapoint.pickRandomCity();
-                    displaySelectedCity(city);
                     startTime = al_get_time();
                 }
 
@@ -254,15 +252,6 @@ void gameOver() {
     al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
     al_flip_display();
     al_clear_to_color(blackBgColor);
-}
-
-void displaySelectedCity(City* city) {
-    if (city != nullptr) {
-        fprintf(stdout, "Selected City: %s (%d, %d)\n",
-                city->getName().c_str(), city->getPosX(), city->getPosY());
-    } else {
-        fprintf(stdout, "No available city. Preparing to exit...\n");
-    }
 }
 
 double computeSecsLeft() {
