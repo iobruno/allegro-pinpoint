@@ -15,7 +15,7 @@
 #define screenHeight 1080
 #define blackBgColor al_map_rgb(0, 0, 0)
 #define whiteBgColor al_map_rgb(255, 255, 255)
-#define refreshRate 30
+#define refreshRate 60
 
 ALLEGRO_DISPLAY *display;
 ALLEGRO_EVENT_QUEUE *event_queue;
@@ -32,8 +32,8 @@ bool isGameOver = false;
 
 int score = 0;
 int lifeAttempts = 5;
-int timePerAttempt = 5; // in Seconds
-int timerBarReduction = 0;
+int timePerAttempt = 10; // in Seconds
+double timerBarReduction = 0;
 
 City *city = nullptr;
 
@@ -204,7 +204,7 @@ void drawTimeBar() {
     if (timeLeft <= 0.0) {
         timerBarReduction = 0;
     }
-    timerBarReduction += screenWidth / (refreshRate * timePerAttempt);
+    timerBarReduction += screenWidth / (refreshRate * timePerAttempt * 1.0);
     float timerBarWidth = screenWidth - timerBarReduction;
     al_draw_line(0, 0, timerBarWidth, 0, al_color_name("red"), 20);
 }
