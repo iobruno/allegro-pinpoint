@@ -6,6 +6,7 @@
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_color.h>
 #include "main.h"
 #include "city.h"
 #include "datapoint.h"
@@ -14,7 +15,7 @@
 #define screenHeight 1080
 #define blackBgColor al_map_rgb(0, 0, 0)
 #define whiteBgColor al_map_rgb(255, 255, 255)
-#define refreshRate 60
+#define refreshRate 30
 
 ALLEGRO_DISPLAY *display;
 ALLEGRO_EVENT_QUEUE *event_queue;
@@ -26,14 +27,16 @@ ALLEGRO_SAMPLE_INSTANCE *bgMusicInstance;
 ALLEGRO_FONT *font;
 
 int mouseX = 0, mouseY = 0;
-
-int score = 0;
-int lifeAttempts = 3;
-int timePerAttempt = 5; // in Seconds
-City *city = nullptr;
-
 double timeLeft, startTime;
 bool isGameOver = false;
+
+int score = 0;
+int lifeAttempts = 5;
+int timePerAttempt = 5; // in Seconds
+int timerBarReduction = 0;
+
+City *city = nullptr;
+
 
 using namespace std;
 
@@ -67,6 +70,7 @@ int main(int argc, char** argv) {
                     fprintf(stdout, "Distance to %s (%d, %d): %f\n\n",
                             city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
                     city = nullptr;
+                    timerBarReduction = 0;
                 }
                 break;
             }
@@ -188,10 +192,20 @@ void redrawScreen() {
                               0, 0, screenWidth, screenHeight-50, 0);
 
         drawHUD();
+        drawTimeBar();
         al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
         al_flip_display();
         al_clear_to_color(blackBgColor);
     }
+}
+
+void drawTimeBar() {
+    if (timeLeft <= 0.0) {
+        timerBarReduction = 0;
+    }
+    timerBarReduction += screenWidth / (refreshRate * timePerAttempt);
+    float timerBarWidth = screenWidth - timerBarReduction;
+    al_draw_line(0, 0, timerBarWidth, 0, al_color_name("red"), 20);
 }
 
 void drawHUD() {
