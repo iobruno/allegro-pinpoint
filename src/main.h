@@ -8,6 +8,7 @@ void redrawScreen();
 void destroy();
 void drawHUD();
 void drawTimeBar();
+void drawMapIcons();
 double computeSecsLeft();
 int computeScore(double distanceFromTarget);
 void gameOver();

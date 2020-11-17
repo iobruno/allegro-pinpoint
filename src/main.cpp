@@ -32,10 +32,13 @@ ALLEGRO_FONT *font;
 int mouseX = 0, mouseY = 0;
 double timeLeft, startTime;
 bool isGameOver = false;
+bool isPaused = false;
 
 int score = 0;
 int lifeAttempts = 5;
+
 int timePerAttempt = 10; // in Seconds
+int mapCityPosX = 0, mapCityPosY = 0;
 double timerBarReduction = 0;
 
 City *city = nullptr;
@@ -69,11 +72,13 @@ int main(int argc, char **argv) {
                 } else if (city != nullptr) {
                     double dist = city->computeDistanceFrom(mouseX, mouseY);
                     score += computeScore(dist);
-                    fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
+                    timerBarReduction = 0;
+                    isPaused = true;
+                    mapCityPosX = city->getPosX();
+                    mapCityPosY = city->getPosY();
                     fprintf(stdout, "Distance to %s (%d, %d): %f\n\n",
                             city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
                     city = nullptr;
-                    timerBarReduction = 0;
                 }
                 break;
             }
@@ -124,6 +129,147 @@ int main(int argc, char **argv) {
 
     destroy();
     return 0;
+}
+
+void redrawScreen() {
+    if (!isGameOver) {
+        al_draw_scaled_bitmap(bgImage,
+                              0, 0, 1375, 972,
+                              0, 0, screenWidth, screenHeight - 50, 0);
+
+        if (isPaused) {
+            drawMapIcons();
+        } else {
+            drawTimeBar();
+        }
+        drawHUD();
+        al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
+        al_flip_display();
+        al_clear_to_color(blackBgColor);
+    }
+}
+
+void drawTimeBar() {
+    if (timeLeft <= 0.0) {
+        timerBarReduction = 0;
+    }
+    timerBarReduction += screenWidth / (refreshRate * timePerAttempt * 1.0);
+    float timerBarWidth = screenWidth - timerBarReduction;
+    al_draw_line(0, 0, timerBarWidth, 0, al_color_name("red"), 20);
+}
+
+void drawMapIcons() {
+    al_draw_scaled_bitmap(clickedMapIcon, 0, 0, 2000, 2723,
+                          float(mouseX - 30), float(mouseY - 30), 2000 * 0.03, 2723 * 0.03, 0);
+
+    al_draw_scaled_bitmap(locationMapIcon,
+                          0, 0, 1353, 1868,
+                          float(mapCityPosX - 1353 * 0.02), float(mapCityPosY - 1868 * 0.05), 1353 * 0.03, 1868 * 0.03,
+                          0);
+}
+
+void drawHUD() {
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 180, screenHeight - 42,
+                 0, ("Life: " + to_string(lifeAttempts)).c_str());
+
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 530, screenHeight - 42,
+                 0, ("Timer: " + to_string(int(timeLeft))).c_str());
+
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 880, screenHeight - 42,
+                 0, ("Score: " + to_string(score)).c_str());
+
+    string cityName = (city != nullptr) ? city->getName() : "N/A";
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 1240, screenHeight - 42,
+                 0, ("City: " + cityName).c_str());
+}
+
+void gameWon() {
+    isGameOver = true;
+
+    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf",
+                                     64, 0);
+    int xCenteredLabel = (screenWidth / 2) - 500;
+    int yCenteredLabel = (screenHeight / 2) - 100;
+
+    al_draw_text(gameOverFont, al_map_rgb(255, 255, 255),
+                 xCenteredLabel, yCenteredLabel, 0, ("CONGRATULATIONS"));
+
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 xCenteredLabel, yCenteredLabel + 150,
+                 0, ("Press any key to quit the game"));
+
+    drawHUD();
+    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
+    al_flip_display();
+    al_clear_to_color(blackBgColor);
+}
+
+void gameOver() {
+    isGameOver = true;
+    timeLeft = 0;
+
+    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf",64, 0);
+    int xCenteredLabel = (screenWidth / 2) - 250;
+    int yCenteredLabel = (screenHeight / 2) - 100;
+
+    al_draw_text(gameOverFont, al_map_rgb(255, 255, 255),
+                 xCenteredLabel, yCenteredLabel, 0, ("GAME OVER"));
+
+    al_draw_text(font, al_map_rgb(255, 255, 255),
+                 xCenteredLabel - 200, yCenteredLabel + 150,
+                 0, ("Press any key to quit the game"));
+
+    drawHUD();
+    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
+    al_flip_display();
+    al_clear_to_color(blackBgColor);
+}
+
+double computeSecsLeft() {
+    return timePerAttempt - (al_get_time() - startTime);
+}
+
+double computeAccuracyScore(double distanceFromTarget) {
+    double accuracyScore = 1000;
+    if (distanceFromTarget <= 50) {
+        accuracyScore -= 0;
+    } else if (distanceFromTarget <= 100) {
+        accuracyScore *= 0.75;
+    } else if (distanceFromTarget <= 150) {
+        accuracyScore *= 0.50;
+    } else if (distanceFromTarget <= 200) {
+        accuracyScore *= 0.25;
+    } else {
+        accuracyScore *= 0;
+        lifeAttempts -= 1; // Player wasn't even trying
+    }
+    return accuracyScore;
+}
+
+double computeTimeBonus() {
+    double timeBonusFactor = 0.05;
+    return timeBonusFactor * int(timeLeft);
+}
+
+int computeScore(double distanceFromTarget) {
+    double accScore = computeAccuracyScore(distanceFromTarget);
+    double multiplier = computeTimeBonus();
+    return int((accScore * (1 + multiplier)) / 10);
+}
+
+void destroy() {
+    al_destroy_display(display);
+    al_destroy_timer(timer);
+    al_destroy_event_queue(event_queue);
+    al_destroy_bitmap(bgImage);
+    al_destroy_sample(bgMusic);
+    al_destroy_sample_instance(bgMusicInstance);
+    al_destroy_font(font);
+    exit(0);
 }
 
 void initializeModules() {
@@ -196,132 +342,4 @@ void initializeModules() {
     al_play_sample_instance(bgMusicInstance);
     al_start_timer(timer);
     redrawScreen();
-}
-
-void redrawScreen() {
-    if (!isGameOver) {
-        al_draw_scaled_bitmap(bgImage,
-                              0, 0, 1375, 972,
-                              0, 0, screenWidth, screenHeight - 50, 0);
-
-        drawHUD();
-        drawTimeBar();
-        al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
-        al_flip_display();
-        al_clear_to_color(blackBgColor);
-    }
-}
-
-void drawTimeBar() {
-    if (timeLeft <= 0.0) {
-        timerBarReduction = 0;
-    }
-    timerBarReduction += screenWidth / (refreshRate * timePerAttempt * 1.0);
-    float timerBarWidth = screenWidth - timerBarReduction;
-    al_draw_line(0, 0, timerBarWidth, 0, al_color_name("red"), 20);
-}
-
-void drawHUD() {
-    al_draw_text(font, al_map_rgb(255, 255, 255),
-                 180, screenHeight - 42,
-                 0, ("Life: " + to_string(lifeAttempts)).c_str());
-
-    al_draw_text(font, al_map_rgb(255, 255, 255),
-                 530, screenHeight - 42,
-                 0, ("Timer: " + to_string(int(timeLeft))).c_str());
-
-    al_draw_text(font, al_map_rgb(255, 255, 255),
-                 880, screenHeight - 42,
-                 0, ("Score: " + to_string(score)).c_str());
-
-    string cityName = (city != nullptr) ? city->getName() : "N/A";
-    al_draw_text(font, al_map_rgb(255, 255, 255),
-                 1240, screenHeight - 42,
-                 0, ("City: " + cityName).c_str());
-}
-
-void gameWon() {
-    isGameOver = true;
-
-    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf",
-                                     64, 0);
-    int xCenteredLabel = (screenWidth / 2) - 500;
-    int yCenteredLabel = (screenHeight / 2) - 100;
-
-    al_draw_text(gameOverFont, al_map_rgb(255, 255, 255),
-                 xCenteredLabel, yCenteredLabel, 0, ("CONGRATULATIONS"));
-
-    al_draw_text(font, al_map_rgb(255, 255, 255),
-                 xCenteredLabel, yCenteredLabel + 150,
-                 0, ("Press any key to quit the game"));
-
-    drawHUD();
-    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
-    al_flip_display();
-    al_clear_to_color(blackBgColor);
-}
-
-void gameOver() {
-    isGameOver = true;
-    timeLeft = 0;
-
-    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf",
-                                     64, 0);
-    int xCenteredLabel = (screenWidth / 2) - 250;
-    int yCenteredLabel = (screenHeight / 2) - 100;
-
-    al_draw_text(gameOverFont, al_map_rgb(255, 255, 255),
-                 xCenteredLabel, yCenteredLabel, 0, ("GAME OVER"));
-
-    al_draw_text(font, al_map_rgb(255, 255, 255),
-                 xCenteredLabel - 200, yCenteredLabel + 150,
-                 0, ("Press any key to quit the game"));
-
-    drawHUD();
-    al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
-    al_flip_display();
-    al_clear_to_color(blackBgColor);
-}
-
-double computeSecsLeft() {
-    return timePerAttempt - (al_get_time() - startTime);
-}
-
-double computeAccuracyScore(double distanceFromTarget) {
-    double accuracyScore = 1000;
-    if (distanceFromTarget <= 50) {
-        accuracyScore -= 0;
-    } else if (distanceFromTarget <= 100) {
-        accuracyScore *= 0.75;
-    } else if (distanceFromTarget <= 150) {
-        accuracyScore *= 0.50;
-    } else if (distanceFromTarget <= 200) {
-        accuracyScore *= 0.25;
-    } else {
-        accuracyScore *= 0;
-        lifeAttempts -= 1; // Player wasn't even trying
-    }
-    return accuracyScore;
-}
-
-double computeTimeBonus() {
-    double timeBonusFactor = 0.05;
-    return timeBonusFactor * int(timeLeft);
-}
-
-int computeScore(double distanceFromTarget) {
-    double accScore = computeAccuracyScore(distanceFromTarget);
-    double multiplier = computeTimeBonus();
-    return int((accScore * (1 + multiplier)) / 10);
-}
-
-void destroy() {
-    al_destroy_display(display);
-    al_destroy_timer(timer);
-    al_destroy_event_queue(event_queue);
-    al_destroy_bitmap(bgImage);
-    al_destroy_sample(bgMusic);
-    al_destroy_sample_instance(bgMusicInstance);
-    al_destroy_font(font);
-    exit(0);
 }
