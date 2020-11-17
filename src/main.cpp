@@ -22,6 +22,9 @@ ALLEGRO_EVENT_QUEUE *event_queue;
 ALLEGRO_TIMER *timer;
 
 ALLEGRO_BITMAP *bgImage;
+ALLEGRO_BITMAP *locationMapIcon;
+ALLEGRO_BITMAP *clickedMapIcon;
+
 ALLEGRO_SAMPLE *bgMusic;
 ALLEGRO_SAMPLE_INSTANCE *bgMusicInstance;
 ALLEGRO_FONT *font;
@@ -154,6 +157,15 @@ void initializeModules() {
     if (!bgImage) {
         al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
                                    "Error Loading Background Image", nullptr, 0);
+        exit(1);
+    }
+
+    /** Loads Map Pin Icons */
+    locationMapIcon = al_load_bitmap("/Users/iobruno/Vault/github/allegro-pinpoint/assets/images/map_pin_blue.png");
+    clickedMapIcon = al_load_bitmap("/Users/iobruno/Vault/github/allegro-pinpoint/assets/images/map_pin_red.png");
+    if (!locationMapIcon || !clickedMapIcon) {
+        al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
+                                   "Error Loading Map Pin Icons", nullptr, 0);
         exit(1);
     }
 
