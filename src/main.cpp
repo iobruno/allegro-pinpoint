@@ -40,9 +40,10 @@ City *city = nullptr;
 
 using namespace std;
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
 
-    Datapoint datapoint = Datapoint::loadDataPointsFrom("/Users/iobruno/Vault/github/allegro-pinpoint/assets/datasets/cities.csv");
+    Datapoint datapoint = Datapoint::loadDataPointsFrom(
+            "/Users/iobruno/Vault/github/allegro-pinpoint/assets/datasets/cities.csv");
     bool isRunning = true;
 
     initializeModules();
@@ -53,7 +54,7 @@ int main(int argc, char** argv) {
         al_init_timeout(&timeout, 0.06);
         al_wait_for_event_until(event_queue, &events, &timeout);
 
-        switch(events.type) {
+        switch (events.type) {
             case ALLEGRO_EVENT_MOUSE_AXES: {
                 mouseX = events.mouse.x;
                 mouseY = events.mouse.y;
@@ -62,8 +63,7 @@ int main(int argc, char** argv) {
             case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
                 if (isGameOver) {
                     isRunning = false;
-                }
-                else if (city != nullptr) {
+                } else if (city != nullptr) {
                     double dist = city->computeDistanceFrom(mouseX, mouseY);
                     score += computeScore(dist);
                     fprintf(stdout, "Click on Coordinates: (%d, %d)\n", mouseX, mouseY);
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
 
 void initializeModules() {
     if (!al_init()) {
-        al_show_native_message_box(nullptr , "Pinpoint++", nullptr,
+        al_show_native_message_box(nullptr, "Pinpoint++", nullptr,
                                    "Could not initialize Allegro", nullptr, 0);
         exit(1);
     }
@@ -140,7 +140,7 @@ void initializeModules() {
     al_init_ttf_addon();
 
     display = al_create_display(screenWidth, screenHeight);
-    timer = al_create_timer(1.0f/refreshRate);
+    timer = al_create_timer(1.0f / refreshRate);
     event_queue = al_create_event_queue();
 
     if (!timer or !display or !event_queue) {
@@ -158,7 +158,8 @@ void initializeModules() {
     }
 
     /** Loads Background Music */
-    bgMusic = al_load_sample("/Users/iobruno/Vault/github/allegro-pinpoint/assets/audio/tracks/POL-misty-dungeon-short.ogg");
+    bgMusic = al_load_sample(
+            "/Users/iobruno/Vault/github/allegro-pinpoint/assets/audio/tracks/POL-misty-dungeon-short.ogg");
     bgMusicInstance = al_create_sample_instance(bgMusic);
     al_reserve_samples(2);
     al_set_sample_instance_playmode(bgMusicInstance, ALLEGRO_PLAYMODE_LOOP);
@@ -189,7 +190,7 @@ void redrawScreen() {
     if (!isGameOver) {
         al_draw_scaled_bitmap(bgImage,
                               0, 0, 1375, 972,
-                              0, 0, screenWidth, screenHeight-50, 0);
+                              0, 0, screenWidth, screenHeight - 50, 0);
 
         drawHUD();
         drawTimeBar();
@@ -210,35 +211,36 @@ void drawTimeBar() {
 
 void drawHUD() {
     al_draw_text(font, al_map_rgb(255, 255, 255),
-                 180, screenHeight-42,
+                 180, screenHeight - 42,
                  0, ("Life: " + to_string(lifeAttempts)).c_str());
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
-                 530, screenHeight-42,
+                 530, screenHeight - 42,
                  0, ("Timer: " + to_string(int(timeLeft))).c_str());
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
-                 880, screenHeight-42,
+                 880, screenHeight - 42,
                  0, ("Score: " + to_string(score)).c_str());
 
-    string cityName = (city != nullptr) ?  city->getName() : "N/A";
+    string cityName = (city != nullptr) ? city->getName() : "N/A";
     al_draw_text(font, al_map_rgb(255, 255, 255),
-                 1240, screenHeight-42,
+                 1240, screenHeight - 42,
                  0, ("City: " + cityName).c_str());
 }
 
 void gameWon() {
     isGameOver = true;
 
-    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf", 64, 0);
+    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf",
+                                     64, 0);
     int xCenteredLabel = (screenWidth / 2) - 500;
     int yCenteredLabel = (screenHeight / 2) - 100;
 
     al_draw_text(gameOverFont, al_map_rgb(255, 255, 255),
-                 xCenteredLabel, yCenteredLabel,0, ("CONGRATULATIONS"));
+                 xCenteredLabel, yCenteredLabel, 0, ("CONGRATULATIONS"));
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
-                 xCenteredLabel, yCenteredLabel+150,
+                 xCenteredLabel, yCenteredLabel + 150,
                  0, ("Press any key to quit the game"));
 
     drawHUD();
@@ -251,15 +253,16 @@ void gameOver() {
     isGameOver = true;
     timeLeft = 0;
 
-    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf", 64, 0);
+    auto gameOverFont = al_load_font("/Users/iobruno/Vault/github/allegro-pinpoint/assets/fonts/Arcade_Interlaced.ttf",
+                                     64, 0);
     int xCenteredLabel = (screenWidth / 2) - 250;
     int yCenteredLabel = (screenHeight / 2) - 100;
 
     al_draw_text(gameOverFont, al_map_rgb(255, 255, 255),
-                 xCenteredLabel, yCenteredLabel,0, ("GAME OVER"));
+                 xCenteredLabel, yCenteredLabel, 0, ("GAME OVER"));
 
     al_draw_text(font, al_map_rgb(255, 255, 255),
-                 xCenteredLabel-200, yCenteredLabel+150,
+                 xCenteredLabel - 200, yCenteredLabel + 150,
                  0, ("Press any key to quit the game"));
 
     drawHUD();
@@ -297,7 +300,7 @@ double computeTimeBonus() {
 int computeScore(double distanceFromTarget) {
     double accScore = computeAccuracyScore(distanceFromTarget);
     double multiplier = computeTimeBonus();
-    return int((accScore * (1 + multiplier))/10);
+    return int((accScore * (1 + multiplier)) / 10);
 }
 
 void destroy() {
