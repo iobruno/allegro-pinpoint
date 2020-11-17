@@ -7,10 +7,10 @@ void initializeModules();
 void redrawScreen();
 void destroy();
 void drawHUD();
+void drawTimeBar();
 double computeSecsLeft();
 int computeScore(double distanceFromTarget);
 void gameOver();
 void gameWon();
-void displaySelectedCity(City* city);
 
 #endif //ALLEGRO_PINPOINT_MAIN_H
