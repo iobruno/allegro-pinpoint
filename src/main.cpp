@@ -136,12 +136,8 @@ void redrawScreen() {
         al_draw_scaled_bitmap(bgImage,
                               0, 0, 1375, 972,
                               0, 0, screenWidth, screenHeight - 50, 0);
-
-        if (isPaused) {
-            drawMapIcons();
-        } else {
-            drawTimeBar();
-        }
+        drawMapIcons();
+        drawTimeBar();
         drawHUD();
         al_draw_circle(float(mouseX), float(mouseY), 10, whiteBgColor, 5);
         al_flip_display();

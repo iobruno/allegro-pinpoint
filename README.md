@@ -13,10 +13,11 @@ Allegro Pinpoint (academic project) in C/C++
 ## TODO List
 - [X] Core Gameplay 
 - [x] Graphically display where the city
-- [ ] Pinpoint sprite
-- [ ] Sound Effects when you win/lose
-- [ ] Skip Logic (Keyboard Event or Collision Detection on Mouse Events)
-- [ ] Progress bar animation sprite (https://www.allegro.cc/manual/5/al_draw_scaled_bitmap)
+- [x] Pinpoint sprite
+- [x] Progress bar animation sprite
+- [ ] Game Logic to Pause the game  
 - [ ] Game Progression (increase game difficulty as you progress)
-- [ ] Mute button to stop the BGM
+- [ ] (Optional) Sound Effects when you win/lose
+- [ ] (Optional) Skip Logic (Keyboard Event or Collision Detection on Mouse Events)
+- [ ] (Optional) Mute button to stop the BGM
 - [X] Heuristics on how to compute the score based on where the player clicked
