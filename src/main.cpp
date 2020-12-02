@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
                     isPaused = true;
                     mapCityPosX = city->getPosX();
                     mapCityPosY = city->getPosY();
+                    fprintf(stdout, "Clicked on: (x=%d, y=%d)\n", mouseX, mouseY);
                     fprintf(stdout, "Distance to %s (%d, %d): %f\n\n",
                             city->getName().c_str(), city->getPosX(), city->getPosY(), dist);
                     city = nullptr;
